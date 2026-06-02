@@ -1,0 +1,30 @@
+configfile: 'config.yml'
+
+rule all:
+    input:
+        expand('data/cophenetic_scatter/{gene1}-{gene2}.png', gene1=config['gene1'], gene2=config['gene2']),
+        expand('data/mantel/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2']),
+
+rule cophenetic_scatter:
+    input:
+        'data/iqtree_protein/{gene1}.treefile',
+        'data/iqtree_protein/{gene2}.treefile'
+    output:
+        'data/cophenetic_scatter/{gene1}-{gene2}.png'
+    threads: 1
+    conda:
+        'bin/env/ete3.yml'
+    script:
+        'bin/scripts/cophenetic_scatter.py'
+
+rule mantel:
+    input:
+        'data/iqtree_protein/{gene1}.treefile',
+        'data/iqtree_protein/{gene2}.treefile'
+    output:
+        'data/mantel/{gene1}-{gene2}.csv'
+    threads: 1
+    conda:
+        'bin/env/ete3.yml'
+    script:
+        'bin/scripts/mantel.py'
