@@ -20,7 +20,7 @@ rule iqtree_protein:
         'data/iqtree_protein/{gene}.treefile'
     params:
         prefix = 'data/iqtree_protein/{gene}',
-    threads: 8
+    threads: 16
     conda:
         'bin/env/iqtree.yml'
     shell:
