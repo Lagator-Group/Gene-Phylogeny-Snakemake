@@ -24,4 +24,4 @@ rule iqtree_protein:
     conda:
         'bin/env/iqtree.yml'
     shell:
-        'iqtree -s {input[0]} -st AA -T AUTO -ntmax {threads} --prefix {params.prefix} -B 1000 -bnni'
+        'iqtree -s {input[0]} -st AA -nt {threads} --prefix {params.prefix} -B 1000 -bnni'
