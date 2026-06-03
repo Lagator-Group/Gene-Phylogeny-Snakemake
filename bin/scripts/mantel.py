@@ -33,7 +33,7 @@ def cophenetic_matrix(tree, labels):
 
     return mat
 
-def mantel_calc(tree1_path,tree2_path,path_out):
+def mantel_calc(tree1_path,tree2_path):
     t1 = Tree(tree1_path)
     t2 = Tree(tree2_path)
 
@@ -87,7 +87,7 @@ def mantel_calc(tree1_path,tree2_path,path_out):
 
     df.loc[0] = [rep, gene, r, p, n]
 
-    df.to_csv(path_out, index=False)
+    return df
 
 rep_path = snakemake.input[0]
 tf_path = snakemake.input[1]
@@ -100,7 +100,11 @@ gene = snakemake.wildcards.gene
 print(f'{rep} + {gene}')
 
 try:
-    mantel_calc(rep_path,tf_path, path_out)
+    df = mantel_calc(rep_path,tf_path)
     print('done')
-except:
-    print('passing')
+except Exception as e:
+    print(e)
+    df = pd.DataFrame(columns=['Gene 1', 'Gene 2', 'Mantel r', 'p', 'n'])
+    df.loc[0] = [rep, gene, np.nan, np.nan, np.nan]
+
+df.to_csv(path_out, index=False)

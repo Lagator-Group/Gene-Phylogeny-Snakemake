@@ -3,8 +3,8 @@ configfile: 'config.yml'
 rule all:
     input:
         expand('data/cophenetic_scatter/{gene1}-{gene2}.png', gene1=config['gene1'], gene2=config['gene2']),
-        expand('data/mantel/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2']),
-
+        'data/mantel/summary.csv'
+        
 rule cophenetic_scatter:
     input:
         'data/iqtree_protein/{gene1}.treefile',
@@ -28,3 +28,14 @@ rule mantel:
         'bin/env/ete3.yml'
     script:
         'bin/scripts/mantel.py'
+
+rule mantel_merge:
+    input:
+        expand('data/mantel/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2'])
+    output:
+        'data/mantel/summary.csv'
+    threads: 1
+    conda: 
+        'bin/env/ete3.yml'
+    script:
+        'bin/scripts/mantel_merge.py'
