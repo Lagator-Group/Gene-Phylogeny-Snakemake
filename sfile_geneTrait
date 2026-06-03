@@ -27,4 +27,4 @@ rule table_merge:
     conda:
         'bin/env/ete3.yml'
     script:
-        'bin/scripts/table-merge.py'
+        'bin/scripts/gene_trait_merge.py'
