@@ -140,6 +140,7 @@ def cophenetic_scatter(tree1_path, tree2_path, save_path):
 
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
 
     # plt.show()
 
@@ -155,5 +156,13 @@ print(f'{rep} + {gene}')
 try:
     cophenetic_scatter(rep_path,tf_path,path_out)
     print('done')
-except:
+
+except Exception as e:
+    print(e)
+    fig, ax = plt.subplots()
+    ax.text(0.5, 0.5, "No data / plot failed",
+            ha="center", va="center")
+    ax.set_axis_off()
+    fig.savefig(path_out, bbox_inches="tight")
+    plt.close(fig)
     print('passing')
