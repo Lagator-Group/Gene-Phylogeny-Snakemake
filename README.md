@@ -1,18 +1,18 @@
-# **To be Updated**
 # Plasmid Transcription Factor Phylogeny
-This snakemake pipeline will generate the files necessary to build a phylogenetic tree for genes located on plasmids, and classify plasmids according to their incompatibility markers and pangenomes. Designed to be compatible with [Phandango](http://jameshadfield.github.io/phandango/#/main).
+The available snakemake pipelines are designed to align sequences with Muscle, build trees with IQ Tree, determine relationships between 2 trees, and determine relationships between 1 tree and a trait.
+
 Briefly, this pipeline:
-1. Merges amino acid (AA) sequences of gene of interest from all plasmids and output to a single file.
-2. Aligns AA sequences with [Muscle](https://github.com/rcedgar/muscle).
-3. Constructs gene phylogenetic tree with [IQ-Tree](https://github.com/Cibiv/IQ-TREE).
+sfile_muscle: Aligns sequences already in a single file using [Muscle](https://github.com/rcedgar/muscle)
+sfile_iqtree: Constructs gene phylogenetic tree with [IQ-Tree](https://github.com/Cibiv/IQ-TREE).
+sfile_cophenetic: Compares phylogeny of two genes using their `.treefile`.
+sfile_geneTrait: Determines if there is correlation between a gene tree structure and metadata trait.
+
 ## Instructions
 ### Required Software
 Uses [Snakemake](https://github.com/snakemake/snakemake) pipeline for sequence alignment and annotation. Needs Snakemake environment to be [installed](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
 ### Required Files
 Most of the files required are outputs of [Plasmid Assembler and TF Annotation pipeline](https://github.com/Lagator-Group/Plasmid-Assembly-TF-Annotation-Snakemake). Specifically, these items are:
-- fasta_plasmid: Complete plasmid sequences in `.fasta` format.
 - prokka: Output of [Prokka](https://github.com/tseemann/prokka) when run on plasmid sequences.
-- sprot: Output of [Plasmid Assembler and TF Annotation pipeline](https://github.com/Lagator-Group/Plasmid-Assembly-TF-Annotation-Snakemake) which contains all Swissprot annotations.
 ### Config File
 Open `config.yml` and adjust the necessary parameters. 
 ### Running the pipeline
