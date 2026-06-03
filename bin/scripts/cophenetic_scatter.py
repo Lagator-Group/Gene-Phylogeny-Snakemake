@@ -148,8 +148,8 @@ rep_path = snakemake.input[0]
 tf_path = snakemake.input[1]
 path_out = snakemake.output[0]
 
-rep = snakemake.wildcards.rep
-gene = snakemake.wildcards.gene
+rep = snakemake.wildcards.gene1
+gene = snakemake.wildcards.gene2
 
 print(f'{rep} + {gene}')
 
