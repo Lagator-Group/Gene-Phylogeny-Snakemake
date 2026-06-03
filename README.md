@@ -11,7 +11,7 @@ sfile_geneTrait: Determines if there is correlation between a gene tree structur
 ### Required Software
 Uses [Snakemake](https://github.com/snakemake/snakemake) pipeline for sequence alignment and annotation. Needs Snakemake environment to be [installed](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
 ### Required Files
-Most of the files required are outputs of [Plasmid Assembler and TF Annotation pipeline](https://github.com/Lagator-Group/Plasmid-Assembly-TF-Annotation-Snakemake). Specifically, these items are:
+Most of the files required are outputs of [Plasmid Assembler and TF Annotation pipeline](https://github.com/Lagator-Group/Plasmid-Assembly-Characterisation-and-Annotation-Snakemake). Specifically, these items are:
 - prokka: Output of [Prokka](https://github.com/tseemann/prokka) when run on plasmid sequences.
 ### Config File
 Open `config.yml` and adjust the necessary parameters. 
