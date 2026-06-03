@@ -22,7 +22,7 @@ rule mantel:
         'data/iqtree_protein/{gene1}.treefile',
         'data/iqtree_protein/{gene2}.treefile'
     output:
-        'data/mantel/{gene1}-{gene2}.csv'
+        temp('data/mantel/{gene1}-{gene2}.csv')
     threads: 1
     conda:
         'bin/env/ete3.yml'
