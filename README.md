@@ -1,5 +1,4 @@
 # Updates Pending
-- Add Robinson-Foulds distance to gene-gene analysis.
 - Implement dupelabel handling to gene-trait analysis.
 
 # Plasmid Transcription Factor Phylogeny
