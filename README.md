@@ -1,10 +1,14 @@
+# Updates Pending
+- Add Robinson-Foulds distance to gene-gene analysis.
+- Implement dupelabel handling to gene-trait analysis.
+
 # Plasmid Transcription Factor Phylogeny
 The available snakemake pipelines are designed to align sequences with Muscle, build trees with IQ Tree, determine relationships between 2 trees, and determine relationships between 1 tree and a trait.
 
 Briefly, this pipeline:
 sfile_muscle: Aligns sequences already in a single file using [Muscle](https://github.com/rcedgar/muscle)
 sfile_iqtree: Constructs gene phylogenetic tree with [IQ-Tree](https://github.com/Cibiv/IQ-TREE).
-sfile_cophenetic: Compares phylogeny of two genes using their `.treefile`.
+sfile_geneGene: Compares phylogeny of two genes using their `.treefile`.
 sfile_geneTrait: Determines if there is correlation between a gene tree structure and metadata trait.
 
 ## Instructions
