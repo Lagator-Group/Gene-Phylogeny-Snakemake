@@ -22,7 +22,7 @@ rule gene_gene:
         'data/iqtree_protein/{gene1}.treefile',
         'data/iqtree_protein/{gene2}.treefile'
     output:
-        temp('data/gene_gene/{gene1}-{gene2}.csv')
+        'data/gene_gene/{gene1}-{gene2}.csv'
     threads: 1
     conda:
         'bin/env/ete3.yml'
@@ -33,7 +33,7 @@ rule geneGene_merge:
     input:
         expand('data/gene_gene/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2']),
     output:
-        'data/gene_gene/summary.csv'
+        'data/gene_gene_summary.csv'
     threads: 1
     conda: 
         'bin/env/ete3.yml'
