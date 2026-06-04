@@ -18,5 +18,5 @@ gene2: ['ccdA_unified']
 ### Gene - Trait Associations: sfile_geneTrait
 metadata: 'metadata.csv'
 gene: ['P62537','P62539']
-gene_col: 'NUCCORE_ACC'
-trait_col: ['BIOSAMPLE_package']
+gene_col: 'NUCCORE_ACC' # column containing sample name. must match the names in the treefile
+trait_col: ['BIOSAMPLE_package'] # column containing trait name

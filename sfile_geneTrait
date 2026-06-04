@@ -14,7 +14,7 @@ rule gene_trait:
         gene_col = config['gene_col']
     threads: 1
     conda:
-        'bin/env/ete3.yml'
+        'ete3' #bin/env/ete3.yml
     script:
         'bin/scripts/gene_trait.py'
 
@@ -25,6 +25,6 @@ rule table_merge:
         'data/gene_trait/summary.csv'
     threads: 1
     conda:
-        'bin/env/ete3.yml'
+        'ete3' #bin/env/ete3.yml
     script:
         'bin/scripts/gene_trait_merge.py'

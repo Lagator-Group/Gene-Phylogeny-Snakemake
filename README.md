@@ -1,6 +1,3 @@
-# Updates Pending
-- Implement dupelabel handling to gene-trait analysis.
-
 # Plasmid Transcription Factor Phylogeny
 The available snakemake pipelines are designed to align sequences with Muscle, build trees with IQ Tree, determine relationships between 2 trees, and determine relationships between 1 tree and a trait.
 
