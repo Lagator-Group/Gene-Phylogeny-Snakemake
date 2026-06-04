@@ -3,7 +3,7 @@ configfile: 'config.yml'
 rule all:
     input:
         expand('data/cophenetic_scatter/{gene1}-{gene2}.png', gene1=config['gene1'], gene2=config['gene2']),
-        'data/mantel/summary.csv'
+        'data/gene_gene/summary.csv'
         
 rule cophenetic_scatter:
     input:
@@ -13,7 +13,7 @@ rule cophenetic_scatter:
         'data/cophenetic_scatter/{gene1}-{gene2}.png'
     threads: 1
     conda:
-        'ete3' #bin/env/ete3.yml
+        'bin/env/ete3.yml'
     script:
         'bin/scripts/cophenetic_scatter.py'
 
@@ -22,23 +22,20 @@ rule gene_gene:
         'data/iqtree_protein/{gene1}.treefile',
         'data/iqtree_protein/{gene2}.treefile'
     output:
-        temp('data/mantel/{gene1}-{gene2}.csv'),
-        temp('data/rf/{gene2}-{gene1}.csv')
+        temp('data/gene_gene/{gene1}-{gene2}.csv')
     threads: 1
     conda:
-        'ete3' #bin/env/ete3.yml
+        'bin/env/ete3.yml'
     script:
         'bin/scripts/gene_gene.py'
 
 rule geneGene_merge:
     input:
-        expand('data/mantel/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2']),
-        expand('data/rf/{gene2}-{gene1}.csv', gene1=config['gene1'], gene2=config['gene2'])
+        expand('data/gene_gene/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2']),
     output:
-        'data/mantel/summary.csv',
-        'data/rf/summary.csv'
+        'data/gene_gene/summary.csv'
     threads: 1
     conda: 
-        'ete3' #bin/env/ete3.yml
+        'bin/env/ete3.yml'
     script:
         'bin/scripts/gene_gene_merge.py'
