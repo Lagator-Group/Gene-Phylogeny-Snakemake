@@ -10,7 +10,7 @@ super5: ['P62552', 'P03066', 'P29367', 'P03856', 'P03847', 'P02982', 'P03038', '
 ### IQ Tree (Combination of Align and Super5): sfile_iqtree
 genes: ['P62552', 'P03066', 'P29367', 'P03856', 'P03847', 'P02982', 'P03038', 'P08315', 'P13959', 'P03067', 'O82922', 'Q7BSX2', 'P18023', 'P02980', 'P04483', 'P62537', 'Q52346', 'P22707', 'P13961', 'P33785', 'P62539', 'P02981', 'P10396', 'P33733', 'P51562', 'Q52221', 'P22308', 'Q05781', 'P03039', 'P33786', 'ccdA_unified', 'finO_unified', 'repA2_unified', 'rep_unified', 'tetA_unified', 'tetR_unified', 'traJ_unified']
 
-### Cophenetic Scatter: sfile_geneGene
+### Gene - Gene Associations: sfile_geneGene
 gene1: ['P13961', 'P10396']
 
 gene2: ['ccdA_unified']
