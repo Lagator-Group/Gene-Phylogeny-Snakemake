@@ -2,12 +2,12 @@ configfile: 'config.yml'
 
 rule all:
     input:
-        expand('data/iqtree_protein/{gene}.treefile',gene=config['genes']),
+        expand('data/iqtree_protein/{gene}/{gene}.treefile',gene=config['genes']),
 
 rule mkdir_iqtree:
     input:
     output:
-        'data/iqtree_protein/{gene}.log'
+        'data/iqtree_protein/{gene}/{gene}.log'
     threads: 1
     shell:
         'touch {output}'
@@ -15,11 +15,11 @@ rule mkdir_iqtree:
 rule iqtree_protein:
     input:
         'data/muscle_protein/{gene}.afa',
-        'data/iqtree_protein/{gene}.log'
+        'data/iqtree_protein/{gene}/{gene}.log'
     output:
-        'data/iqtree_protein/{gene}.treefile'
+        'data/iqtree_protein/{gene}/{gene}.treefile'
     params:
-        prefix = 'data/iqtree_protein/{gene}',
+        prefix = 'data/iqtree_protein/{gene}/{gene}',
     threads: 16
     conda:
         'bin/env/iqtree.yml'
