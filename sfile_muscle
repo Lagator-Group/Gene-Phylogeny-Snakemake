@@ -5,26 +5,36 @@ rule all:
         expand('data/align/{align}.afa',align=config['align']),
         expand('data/super5/{super5}.afa',super5=config['super5'])
 
+rule makedir_muscle:
+    input:
+    output:
+        'data/muscle_protein/muscle.log'
+    threads: 1
+    shell:
+        'touch data/muscle_protein/muscle.txt'
+
 rule super5:
     input:
-        'data/merged_protein/{super5}.fa'
+        'data/merged_protein/{super5}.fa',
+        'data/muscle_protein/muscle.txt'
     output:
         'data/super5/{super5}.afa'
     threads: 8
     conda:
         'bin/env/muscle.yml'
     shell:
-        'muscle -super5 {input} -output {output} && '
+        'muscle -super5 {input[0]} -output {output} && '
         'cp {output} data/muscle_protein/{wildcards.super5}.afa'
 
 rule align:
     input:
-        'data/merged_protein/{align}.fa'
+        'data/merged_protein/{align}.fa',
+        'data/muscle_protein/muscle.txt'
     output:
         'data/align/{align}.afa'
     threads: 8
     conda:
         'bin/env/muscle.yml'
     shell:
-        'muscle -align {input} -output {output} && '
+        'muscle -align {input[0]} -output {output} && '
         'cp {output} data/muscle_protein/{wildcards.align}.afa'
