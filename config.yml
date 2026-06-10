@@ -23,4 +23,8 @@ gene2: ['ccdA_unified']
 metadata: 'metadata.csv'
 gene: ['O82922','P02980','P02981','P02982']
 gene_col: 'NUCCORE_ACC' # column containing sample name. must match the names in the treefile
-trait_col: ['predicted_host_range_overall_name'] # column containing trait name
+# Trait columns. The script treats each as categorical — every unique value
+# gets one per-value Mantel + purity test, BH-corrected within (gene, trait).
+# Works for high-cardinality strings (host family, plasmid type) and for
+# low-cardinality integer columns (year, host_range_count) alike.
+trait_col: ['predicted_host_range_overall_name', 'Last_update_year', 'predicted_host_range_count']
