@@ -2,29 +2,34 @@ configfile: 'config.yml'
 
 rule all:
     input:
-        'data/gene_trait/summary.csv'
+        'data/gene_trait_summary.csv'
 
 rule gene_trait:
     input:
         'data/iqtree_protein/{gene}.treefile',
         config['metadata']
     output:
+        # Per-value long format: one row per (gene, trait, trait_value).
         'data/gene_trait/{gene}-{trait}.csv'
     params:
         gene_col = config['gene_col']
     threads: 1
     conda:
-        'bin/env/ete3.yml'
+        'ete3' #'bin/env/ete3.yml'
+
     script:
         'bin/scripts/gene_trait.py'
 
 rule table_merge:
     input:
-        expand('data/gene_trait/{gene}-{trait}.csv', gene=config['gene'],trait=config['trait_col'])
+        expand(
+            'data/gene_trait/{gene}-{trait}.csv',
+            gene=config['gene'], trait=config['trait_col']
+        ),
     output:
         'data/gene_trait_summary.csv'
     threads: 1
     conda:
-        'bin/env/ete3.yml'
+        'ete3' #'bin/env/ete3.yml'
     script:
         'bin/scripts/gene_trait_merge.py'
