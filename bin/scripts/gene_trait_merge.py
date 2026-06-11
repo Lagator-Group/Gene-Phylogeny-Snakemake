@@ -2,8 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 
-# scipy.stats.false_discovery_control was added in scipy 1.11. Older scipy
-# versions should use statsmodels.stats.multitest.multipletests instead.
 try:
     from scipy.stats import false_discovery_control as _bh
     _USE_NEW_API = True
@@ -46,13 +44,6 @@ for file in os.listdir(dir_in):
     df_temp = pd.read_csv(os.path.join(dir_in, file))
     df = pd.concat([df, df_temp], axis=0)
 
-# BH-correct within (Gene, Trait) groups, separately for Mantel and Purity
-# p-values. NaN/insufficient_data/error rows stay NaN. A row is considered
-# "Significant BH" if either adjusted p-value is < 0.05.
-#
-# Use transform (not apply) so the result is automatically aligned to the
-# original df's index — apply + reset_index is fragile when groups are
-# non-contiguous or when all values in a group are NaN.
 if len(df) > 0:
     df["Mantel p-value BH"] = (
         df.groupby(["Gene", "Trait"])["Mantel p-value"]

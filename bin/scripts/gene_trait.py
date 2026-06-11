@@ -10,14 +10,7 @@ from ete3 import Tree
 from skbio import DistanceMatrix
 from skbio.stats.distance import mantel
 
-
-# Minimum number of accessions annotated with a trait value required to run
-# the Mantel + purity test. Values below this threshold get an
-# `insufficient_data` row instead of a meaningless p-value.
 MIN_TRAIT_COUNT = 10
-
-# Both classes must have at least this many accessions for Mantel to be
-# meaningful. Otherwise the binary trait is too imbalanced.
 MIN_CLASS_COUNT = 3
 
 
@@ -38,10 +31,7 @@ def get_unique_trait_values(meta, id_col, trait_col):
     sub[id_col] = sub[id_col].astype(str).apply(clean_id)
     sub[trait_col] = sub[trait_col].astype(str).str.strip()
     sub = sub.drop_duplicates(subset=[id_col, trait_col])
-    values = sorted(
-        v for v in sub[trait_col].unique()
-        if v and v.lower() != "unknown"
-    )
+    values = sorted(v for v in sub[trait_col].unique() if v and v.lower() != "unknown")
     return values, sub
 
 
@@ -124,18 +114,13 @@ def build_test_dict(tree, sub_meta, id_col, trait_col, value):
 
     Returns (dict, n_positive, n_negative).
     """
-    # Map: cleaned leaf id -> original leaf name (for the leaves that have
-    # a unique cleaned form; if multiple leaves share the same cleaned id,
-    # we keep them all — they're truly duplicate entries in the tree).
     leaf_clean_to_originals = {}
     for leaf in tree.iter_leaves():
         cid = clean_id(leaf.name)
         leaf_clean_to_originals.setdefault(cid, []).append(leaf.name)
 
     meta_ids = set(sub_meta[id_col].astype(str))
-    annotated = set(
-        sub_meta.loc[sub_meta[trait_col] == value, id_col].astype(str)
-    )
+    annotated = set(sub_meta.loc[sub_meta[trait_col] == value, id_col].astype(str))
 
     test_dict = {}
     for cid, originals in leaf_clean_to_originals.items():
@@ -158,9 +143,7 @@ def run_value_test(tree, metadata_dict):
     via .prune()).
     """
     if len(metadata_dict) < 3:
-        raise ValueError(
-            f"only {len(metadata_dict)} accessions in test (need >= 3)"
-        )
+        raise ValueError(f"only {len(metadata_dict)} accessions in test (need >= 3)")
     positives = sum(1 for v in metadata_dict.values() if v == "1")
     negatives = len(metadata_dict) - positives
     if positives < MIN_CLASS_COUNT or negatives < MIN_CLASS_COUNT:
@@ -188,9 +171,6 @@ def run_value_test(tree, metadata_dict):
     }
 
 
-# -----------------------
-# Snakemake entry point
-# -----------------------
 def main():
     t_path = snakemake.input[0]
     metadata = pd.read_csv(snakemake.input[1], low_memory=False)
@@ -199,44 +179,40 @@ def main():
 
     path_out = snakemake.output[0]
 
-    # discover the universe of values for this trait column
     trait_values, sub_meta = get_unique_trait_values(metadata, id_col, trait_col)
 
-    # Load + preprocess the tree ONCE per gene. We clone it per value test
-    # because .prune() mutates the tree in place.
     base_tree = Tree(t_path)
     base_tree = preprocess_tree(base_tree)
 
-    print(f"[gene_trait] gene={snakemake.wildcards.gene} trait={trait_col} "
-          f"values={len(trait_values)}")
+    print(
+        f"[gene_trait] gene={snakemake.wildcards.gene} trait={trait_col} "
+        f"values={len(trait_values)}"
+    )
 
     rows = []
     for value in trait_values:
-        # Count unique accessions in the FULL metadata annotated with this
-        # value. Used only to decide whether to short-circuit with
-        # insufficient_data. The actual test candidate space is built per
-        # value inside build_test_dict (it depends on which leaves of the tree
-        # have metadata at all).
         n_unique_annotated = int(
             sub_meta.loc[sub_meta[trait_col] == value, id_col].nunique()
         )
 
         if n_unique_annotated < MIN_TRAIT_COUNT:
-            rows.append({
-                "Gene": snakemake.wildcards.gene,
-                "Trait": trait_col,
-                "Trait_Value": value,
-                "N_Accessions": np.nan,
-                "N_Positive": np.nan,
-                "N_Negative": np.nan,
-                "Status": "insufficient_data",
-                "Observed Purity": np.nan,
-                "Null Mean": np.nan,
-                "Purity p-value": np.nan,
-                "Mantel r": np.nan,
-                "Mantel p-value": np.nan,
-                "Error": "",
-            })
+            rows.append(
+                {
+                    "Gene": snakemake.wildcards.gene,
+                    "Trait": trait_col,
+                    "Trait_Value": value,
+                    "N_Accessions": np.nan,
+                    "N_Positive": np.nan,
+                    "N_Negative": np.nan,
+                    "Status": "insufficient_data",
+                    "Observed Purity": np.nan,
+                    "Null Mean": np.nan,
+                    "Purity p-value": np.nan,
+                    "Mantel r": np.nan,
+                    "Mantel p-value": np.nan,
+                    "Error": "",
+                }
+            )
             continue
 
         try:
@@ -244,34 +220,35 @@ def main():
                 base_tree, sub_meta, id_col, trait_col, value
             )
             if len(metadata_dict) == 0:
-                raise ValueError(
-                    "no tree leaves overlap with metadata for this value"
-                )
+                raise ValueError("no tree leaves overlap with metadata for this value")
 
             test_tree = base_tree.copy("newick-extended")
             result = run_value_test(test_tree, metadata_dict)
-            rows.append({
-                "Gene": snakemake.wildcards.gene,
-                "Trait": trait_col,
-                "Trait_Value": value,
-                "N_Accessions": result["n_accessions"],
-                "N_Positive": result["n_positive"],
-                "N_Negative": result["n_negative"],
-                "Status": "ok",
-                "Observed Purity": result["observed_purity"],
-                "Null Mean": result["null_mean"],
-                "Purity p-value": result["purity_p_value"],
-                "Mantel r": result["mantel_r"],
-                "Mantel p-value": result["mantel_p_value"],
-                "Error": "",
-            })
-            print(f"  - {value}: n={result['n_accessions']} "
-                  f"(+{result['n_positive']}/-{result['n_negative']}) "
-                  f"purity_p={result['purity_p_value']:.4g} "
-                  f"mantel_p={result['mantel_p_value']:.4g}")
+            rows.append(
+                {
+                    "Gene": snakemake.wildcards.gene,
+                    "Trait": trait_col,
+                    "Trait_Value": value,
+                    "N_Accessions": result["n_accessions"],
+                    "N_Positive": result["n_positive"],
+                    "N_Negative": result["n_negative"],
+                    "Status": "ok",
+                    "Observed Purity": result["observed_purity"],
+                    "Null Mean": result["null_mean"],
+                    "Purity p-value": result["purity_p_value"],
+                    "Mantel r": result["mantel_r"],
+                    "Mantel p-value": result["mantel_p_value"],
+                    "Error": "",
+                }
+            )
+            print(
+                f"  - {value}: n={result['n_accessions']} "
+                f"(+{result['n_positive']}/-{result['n_negative']}) "
+                f"purity_p={result['purity_p_value']:.4g} "
+                f"mantel_p={result['mantel_p_value']:.4g}"
+            )
         except Exception as e:
             warnings.warn(f"[gene_trait] {trait_col}={value} failed: {e}")
-            # Report the actually-matched counts when available, NaN otherwise.
             try:
                 n_pos_safe = n_pos
                 n_neg_safe = n_neg
@@ -280,21 +257,23 @@ def main():
                 n_pos_safe = np.nan
                 n_neg_safe = np.nan
                 n_acc_safe = np.nan
-            rows.append({
-                "Gene": snakemake.wildcards.gene,
-                "Trait": trait_col,
-                "Trait_Value": value,
-                "N_Accessions": n_acc_safe,
-                "N_Positive": n_pos_safe,
-                "N_Negative": n_neg_safe,
-                "Status": "error",
-                "Observed Purity": np.nan,
-                "Null Mean": np.nan,
-                "Purity p-value": np.nan,
-                "Mantel r": np.nan,
-                "Mantel p-value": np.nan,
-                "Error": str(e),
-            })
+            rows.append(
+                {
+                    "Gene": snakemake.wildcards.gene,
+                    "Trait": trait_col,
+                    "Trait_Value": value,
+                    "N_Accessions": n_acc_safe,
+                    "N_Positive": n_pos_safe,
+                    "N_Negative": n_neg_safe,
+                    "Status": "error",
+                    "Observed Purity": np.nan,
+                    "Null Mean": np.nan,
+                    "Purity p-value": np.nan,
+                    "Mantel r": np.nan,
+                    "Mantel p-value": np.nan,
+                    "Error": str(e),
+                }
+            )
 
     df = pd.DataFrame(rows)
     df.to_csv(path_out, index=False)

@@ -1,12 +1,8 @@
 from ete3 import Tree
 import pandas as pd
 import numpy as np
-from scipy.spatial.distance import squareform
-from scipy.stats import pearsonr
 from skbio.stats.distance import mantel, DistanceMatrix
 import random
-import copy
-from pathlib import Path
 
 
 ### Mantel test
@@ -43,10 +39,6 @@ def mantel_calc(tree1_path, tree2_path):
     t1 = Tree(tree1_path)
     t2 = Tree(tree2_path)
 
-    # ============================================================
-    # KEEP SHARED TAXA ONLY
-    # ============================================================
-
     shared = sorted(set(t1.get_leaf_names()) & set(t2.get_leaf_names()))
 
     t1.prune(shared)
@@ -55,23 +47,11 @@ def mantel_calc(tree1_path, tree2_path):
     t1.unroot()
     t2.unroot()
 
-    # ============================================================
-    # BUILD COPHENETIC MATRIX
-    # ============================================================
-
     m1 = cophenetic_matrix(t1, shared)
     m2 = cophenetic_matrix(t2, shared)
 
-    # ============================================================
-    # CONVERT TO DISTANCEMATRIX
-    # ============================================================
-
     dm1 = DistanceMatrix(m1, ids=shared)
     dm2 = DistanceMatrix(m2, ids=shared)
-
-    # ============================================================
-    # MANTEL TEST
-    # ============================================================
 
     r, p, n = mantel(dm1, dm2, method="pearson", permutations=999)
 
@@ -87,8 +67,6 @@ def mantel_calc(tree1_path, tree2_path):
 
 
 ### Robinson-Foulds
-
-
 def get_shared_leaves(t1, t2):
     """Return shared leaf names."""
     leaves1 = set(t1.get_leaf_names())
