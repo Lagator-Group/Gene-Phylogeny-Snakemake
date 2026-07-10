@@ -23,8 +23,27 @@ gene2: ['ccdA_unified']
 metadata: 'metadata.csv'
 gene: ['O82922','P02980','P02981','P02982']
 gene_col: 'NUCCORE_ACC' # column containing sample name. must match the names in the treefile
-# Trait columns. The script treats each as categorical — every unique value
-# gets one per-value Mantel + purity test, BH-corrected within (gene, trait).
-# Works for high-cardinality strings (host family, plasmid type) and for
-# low-cardinality integer columns (year, host_range_count) alike.
-trait_col: ['predicted_host_range_overall_name', 'Last_update_year', 'predicted_host_range_count']
+# DISCRETE / categorical traits -> gene_trait.py (per-value purity + binary
+# Mantel test, BH-corrected within gene x trait). Nominal labels with usable
+# cardinality. NOTE: some of these (AMR, rep_type(s), relaxase_type(s),
+# orit_type(s), Inc_group, ECOSYSTEM_tags) contain comma-separated multi-values
+# and are tested as exact-combination categories unless exploded first.
+# Last_update_month is numeric but cyclic (Dec~Jan), so it belongs here, not as
+# continuous. Excluded as unusable traits: identifier/free-text columns
+# (NUCCORE_UID, BIOSAMPLE_ACC, BIOSAMPLE_title, NUCCORE_Description,
+# ECOSYSTEM_query), nominal NCBI taxids that only look numeric
+# (BIOSAMPLE_taxonomy, ECOSYSTEM_taxid), and very-high-cardinality geography
+# (State ~876, City ~3085).
+trait_col: [
+    'predicted_host_range_overall_name', 'predicted_mobility', 'mpf_type',
+    'orit_type(s)', 'relaxase_type(s)', 'Last_update_month', 'BIOSAMPLE_package',
+    'AMR', 'Inc_group', 'rep_type(s)', 'ECOSYSTEM_tags', 'Country'
+]
+# CONTINUOUS traits -> gene_trait_numeric.py (phylogenetic-signal statistics:
+# Blomberg's K, Pagel's lambda, Moran's I, continuous Mantel). Interval/ratio
+# scale where numeric distance is meaningful. Non-numeric cells are dropped.
+# LOCATION_lat / LOCATION_lng measure GEOGRAPHIC (not biological) clustering.
+trait_num_col: [
+    'Last_update_year', 'predicted_host_range_count',
+    'LOCATION_lat', 'LOCATION_lng'
+]
