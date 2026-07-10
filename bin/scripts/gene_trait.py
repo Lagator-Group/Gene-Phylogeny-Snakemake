@@ -17,8 +17,12 @@ MIN_CLASS_COUNT = 3
 def clean_id(x):
     """
     Removes duplicate suffixes like _dupelabel1, _dupelabel2, etc.
+
+    Coerces to str first: pandas 3.0's astype(str) uses the new ``str`` dtype,
+    which leaves NaN as a float rather than the string 'nan', so a bare
+    ``x.split`` would raise on missing ids.
     """
-    return x.split("_dupelabel")[0]
+    return str(x).split("_dupelabel")[0]
 
 
 def get_unique_trait_values(meta, id_col, trait_col):
@@ -28,7 +32,8 @@ def get_unique_trait_values(meta, id_col, trait_col):
     fully exploded (one value per cell in the trait column).
     """
     sub = meta[[id_col, trait_col]].dropna(subset=[trait_col]).copy()
-    sub[id_col] = sub[id_col].astype(str).apply(clean_id)
+    sub = sub.dropna(subset=[id_col])
+    sub[id_col] = sub[id_col].astype(str).map(clean_id)
     sub[trait_col] = sub[trait_col].astype(str).str.strip()
     sub = sub.drop_duplicates(subset=[id_col, trait_col])
     values = sorted(v for v in sub[trait_col].unique() if v and v.lower() != "unknown")
@@ -72,6 +77,58 @@ def permutation_test(tree, metadata_dict, n_iter=1000, seed=42):
         "observed_purity": observed,
         "null_mean": null_scores.mean(),
         "null_std": null_scores.std(),
+        "p_value": p_value,
+        "null_distribution": null_scores,
+    }
+
+
+def parsimony_score(tree, state_dict):
+    """
+    Fitch parsimony score: the minimum number of state changes for a discrete
+    (here binary "1"/"0") character on the tree topology. Computed bottom-up;
+    the state-frequency ("majority") rule generalises the classic Fitch pass to
+    multifurcations (e.g. an unrooted tree's trifurcating root) and reduces to
+    standard Fitch at bifurcating nodes.
+
+    A low score means same-state tips are phylogenetically clustered.
+    """
+    score = 0
+    node_states = {}
+    for node in tree.traverse("postorder"):
+        if node.is_leaf():
+            node_states[node] = {state_dict[node.name]}
+            continue
+        counts = Counter()
+        for child in node.children:
+            for s in node_states[child]:
+                counts[s] += 1
+        max_count = max(counts.values())
+        node_states[node] = {s for s, c in counts.items() if c == max_count}
+        score += len(node.children) - max_count
+    return score
+
+
+def parsimony_permutation_test(tree, metadata_dict, n_iter=1000, seed=42):
+    """
+    Permutation test on the Fitch parsimony score. Signal = FEWER state changes
+    than expected when tip labels are shuffled, so the p-value is the fraction
+    of null scores <= observed (Maddison & Slatkin 1991).
+    """
+    random.seed(seed)
+    keys = list(metadata_dict.keys())
+    values = list(metadata_dict.values())
+    observed = parsimony_score(tree, metadata_dict)
+    null_scores = []
+    for _ in range(n_iter):
+        shuffled = random.sample(values, len(values))
+        shuffled_dict = dict(zip(keys, shuffled))
+        null_scores.append(parsimony_score(tree, shuffled_dict))
+    null_scores = np.array(null_scores)
+    p_value = (np.sum(null_scores <= observed) + 1) / (n_iter + 1)
+    return {
+        "observed_parsimony": int(observed),
+        "null_mean": float(null_scores.mean()),
+        "null_std": float(null_scores.std()),
         "p_value": p_value,
         "null_distribution": null_scores,
     }
@@ -138,7 +195,7 @@ def build_test_dict(tree, sub_meta, id_col, trait_col, value):
 
 def run_value_test(tree, metadata_dict):
     """
-    Run purity + permutation + Mantel on a single binary trait dict.
+    Run purity + parsimony + Mantel on a single binary trait dict.
     Caller is responsible for cloning the tree (each value test mutates it
     via .prune()).
     """
@@ -155,6 +212,9 @@ def run_value_test(tree, metadata_dict):
     tree.prune(list(metadata_dict.keys()), preserve_branch_length=True)
 
     purity_result = permutation_test(tree=tree, metadata_dict=metadata_dict)
+    parsimony_result = parsimony_permutation_test(
+        tree=tree, metadata_dict=metadata_dict
+    )
     tree_dm = tree_to_distance_matrix(tree)
     trait_dm = trait_to_distance_matrix(metadata_dict)
     mantel_result = run_mantel(tree_dm, trait_dm)
@@ -166,6 +226,9 @@ def run_value_test(tree, metadata_dict):
         "observed_purity": purity_result["observed_purity"],
         "null_mean": purity_result["null_mean"],
         "purity_p_value": purity_result["p_value"],
+        "parsimony_score": parsimony_result["observed_parsimony"],
+        "parsimony_null_mean": parsimony_result["null_mean"],
+        "parsimony_p_value": parsimony_result["p_value"],
         "mantel_r": mantel_result["mantel_r"],
         "mantel_p_value": mantel_result["p_value"],
     }
@@ -208,6 +271,9 @@ def main():
                     "Observed Purity": np.nan,
                     "Null Mean": np.nan,
                     "Purity p-value": np.nan,
+                    "Parsimony Score": np.nan,
+                    "Parsimony Null Mean": np.nan,
+                    "Parsimony p-value": np.nan,
                     "Mantel r": np.nan,
                     "Mantel p-value": np.nan,
                     "Error": "",
@@ -236,6 +302,9 @@ def main():
                     "Observed Purity": result["observed_purity"],
                     "Null Mean": result["null_mean"],
                     "Purity p-value": result["purity_p_value"],
+                    "Parsimony Score": result["parsimony_score"],
+                    "Parsimony Null Mean": result["parsimony_null_mean"],
+                    "Parsimony p-value": result["parsimony_p_value"],
                     "Mantel r": result["mantel_r"],
                     "Mantel p-value": result["mantel_p_value"],
                     "Error": "",
@@ -245,6 +314,7 @@ def main():
                 f"  - {value}: n={result['n_accessions']} "
                 f"(+{result['n_positive']}/-{result['n_negative']}) "
                 f"purity_p={result['purity_p_value']:.4g} "
+                f"parsimony_p={result['parsimony_p_value']:.4g} "
                 f"mantel_p={result['mantel_p_value']:.4g}"
             )
         except Exception as e:
@@ -269,6 +339,9 @@ def main():
                     "Observed Purity": np.nan,
                     "Null Mean": np.nan,
                     "Purity p-value": np.nan,
+                    "Parsimony Score": np.nan,
+                    "Parsimony Null Mean": np.nan,
+                    "Parsimony p-value": np.nan,
                     "Mantel r": np.nan,
                     "Mantel p-value": np.nan,
                     "Error": str(e),
