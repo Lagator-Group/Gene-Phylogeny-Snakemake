@@ -4,7 +4,7 @@ rule all:
     input:
         expand('data/cophenetic_scatter/{gene1}-{gene2}.png', gene1=config['gene1'], gene2=config['gene2']),
         'data/gene_gene_summary.csv'
-        
+
 rule cophenetic_scatter:
     input:
         'data/iqtree_protein/{gene1}.treefile',
