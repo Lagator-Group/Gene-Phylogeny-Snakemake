@@ -8,7 +8,7 @@ rule all:
 ### Categorical traits: per-value purity + binary Mantel test.
 rule gene_trait:
     input:
-        'data/iqtree_protein/{gene}.treefile',
+        'data/iqtree_protein/{gene}/{gene}.treefile',
         config['metadata']
     output:
         # Per-value long format: one row per (gene, trait, trait_value).
@@ -40,7 +40,7 @@ rule table_merge:
 ### (Blomberg's K, Pagel's lambda, Moran's I, continuous Mantel).
 rule gene_trait_numeric:
     input:
-        'data/iqtree_protein/{gene}.treefile',
+        'data/iqtree_protein/{gene}/{gene}.treefile',
         config['metadata']
     output:
         # One row per (gene, trait).
