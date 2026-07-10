@@ -7,8 +7,8 @@ rule all:
 
 rule cophenetic_scatter:
     input:
-        'data/iqtree_protein/{gene1}.treefile',
-        'data/iqtree_protein/{gene2}.treefile'
+        'data/iqtree_protein/{gene1}/{gene1}.treefile',
+        'data/iqtree_protein/{gene2}/{gene2}.treefile'
     output:
         'data/cophenetic_scatter/{gene1}-{gene2}.png'
     threads: 1
@@ -19,8 +19,8 @@ rule cophenetic_scatter:
 
 rule gene_gene:
     input:
-        'data/iqtree_protein/{gene1}.treefile',
-        'data/iqtree_protein/{gene2}.treefile'
+        'data/iqtree_protein/{gene1}/{gene1}.treefile',
+        'data/iqtree_protein/{gene2}/{gene2}.treefile'
     output:
         'data/gene_gene/{gene1}-{gene2}.csv'
     threads: 1
