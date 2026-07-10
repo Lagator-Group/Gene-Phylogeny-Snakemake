@@ -11,8 +11,8 @@ def merge_df(dir_in, df):
 
 dir_in = 'data/gene_gene'
 
-cols = ['Gene1', 'Gene2', 'Mantel r', 'p', 'n', 'RF', 'Max RF', 'Normalized RF', 'Shared taxa', 'Permutation p-value']
+cols = ['Gene1', 'Gene2', 'Mantel r', 'p', 'n', 'RF', 'Max RF', 'Normalized RF', 'Shared taxa', 'Permutation p-value', 'KC topological', 'KC branch-length']
 df = pd.DataFrame(columns=cols)
 df = merge_df(dir_in, df)
 
-df.to_csv(os.path.join(dir_in,'summary.csv'), index=False)
+df.to_csv(snakemake.output[0], index=False)
