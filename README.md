@@ -4,7 +4,7 @@ The available Snakemake pipelines align sequences with Muscle, build trees with 
 Pipelines:
 - **sfile_muscle**: Aligns sequences from a single file using [Muscle](https://github.com/rcedgar/muscle).
 - **sfile_iqtree**: Constructs gene phylogenetic trees with [IQ-TREE](https://github.com/Cibiv/IQ-TREE).
-- **sfile_geneGene**: Compares the phylogenies of two genes from their `.treefile`s (Mantel + Robinson-Foulds).
+- **sfile_geneGene**: Compares the phylogenies of two genes from their `.treefile`s — quantitatively (Mantel, Robinson-Foulds, Kendall-Colijn) and graphically (cophenetic scatter). See below.
 - **sfile_geneTrait**: Tests whether a gene tree's structure is associated with metadata traits. Handles both categorical and continuous traits (see below).
 
 ## Gene–Trait analysis (`sfile_geneTrait`)
@@ -88,6 +88,22 @@ Papers that introduce or apply each test in the use-case it serves here. Reviews
 
 **Implementation reference:**
 - Kembel, S.W., Cowan, P.D., Helmus, M.R., Cornwell, W.K., Morlon, H., Ackerly, D.D., Blomberg, S.P., & Webb, C.O. (2010). Picante: R tools for integrating phylogenies and ecology. *Bioinformatics*, 26(11), 1463–1464. doi:10.1093/bioinformatics/btq166 — Reference implementations of K, Moran's I, and permutation tests that the calculations here follow.
+
+## Gene–gene tree comparison (`sfile_geneGene`)
+This pipeline asks whether two genes share evolutionary history (congruent trees) over their shared accessions. Each gene pair yields per-pair outputs plus a merged `data/gene_gene_summary.csv`.
+
+**Quantitative** (`data/gene_gene/*.csv`):
+- **Mantel r** (+ permutation p) — correlation of the two cophenetic (patristic) distance matrices; branch-length-aware global congruence. High positive r with low p = congruent.
+- **Robinson-Foulds** (RF, Max RF, Normalized RF, + permutation p) — counts bipartitions in one tree but not the other. RF 0 / Normalized RF 0 = identical topology; Normalized RF → 1 = maximally different. RF is topology-only and coarse (small changes can cause large jumps), which is why Kendall-Colijn is also reported.
+- **Kendall-Colijn** (KC topological, KC branch-length) — Euclidean distance between the trees' KC vectors (root-to-MRCA depth per tip pair). 0 = identical, larger = more different. The topological version is a more graduated/stable alternative to RF; the branch-length version echoes the Mantel/cophenetic view. Trees are midpoint-rooted first (KC requires rooted trees).
+
+**Graphical:**
+- **Cophenetic scatter** (`data/cophenetic_scatter/*.png`) — one point per taxon pair, plotting its distance in tree 1 vs tree 2. Points tight on the identity line = congruent; diffuse cloud = incongruent. Shows *global* agreement (Pearson r). (Tanglegrams were considered as a "where do they disagree" view but are not legible at these tree sizes.)
+
+### Gene–gene references
+- Robinson, D.F., & Foulds, L.R. (1981). Comparison of phylogenetic trees. *Mathematical Biosciences*, 53(1–2), 131–147. doi:10.1016/0025-5564(81)90043-2 — the Robinson-Foulds distance.
+- Kendall, M., & Colijn, C. (2016). Mapping phylogenetic trees to reveal distinct patterns of evolution. *Molecular Biology and Evolution*, 33(10), 2735–2743. doi:10.1093/molbev/msw124 — the Kendall-Colijn metric; a tunable, more informative tree distance than RF.
+- Mantel test and its caveats — see the Mantel references in the section above (incl. Harmon & Glor 2010).
 
 ## Instructions
 ### Required Software
