@@ -1,0 +1,81 @@
+## Local variant of sfile_geneTrait.
+##
+## Identical rules, but each `conda:` directive names an EXISTING conda
+## environment (`ete3`) instead of the environment definition file
+## `bin/env/ete3.yml`. With `--use-conda` this reuses the already-built env
+## rather than solving+building a fresh copy under .snakemake/conda/ (which is
+## very slow on a /mnt/c WSL filesystem). Use this on a machine where the
+## `ete3` env already exists; use sfile_geneTrait for a portable/from-scratch run.
+##
+## Run:
+##   snakemake -s sfile_geneTrait_local -c1 --use-conda --conda-frontend conda
+
+configfile: 'config.yml'
+
+rule all:
+    input:
+        'data/gene_trait_summary.csv',
+        'data/gene_trait_numeric_summary.csv'
+
+### Categorical traits: per-value purity + binary Mantel test.
+rule gene_trait:
+    input:
+        'data/iqtree_protein/{gene}.treefile',
+        config['metadata']
+    output:
+        # Per-value long format: one row per (gene, trait, trait_value).
+        'data/gene_trait/{gene}-{trait}.csv'
+    params:
+        gene_col = config['gene_col']
+    threads: 1
+    conda:
+        'ete3'
+
+    script:
+        'bin/scripts/gene_trait.py'
+
+rule table_merge:
+    input:
+        expand(
+            'data/gene_trait/{gene}-{trait}.csv',
+            gene=config['gene'], trait=config['trait_col']
+        ),
+    output:
+        'data/gene_trait_summary.csv'
+    threads: 1
+    conda:
+        'ete3'
+    script:
+        'bin/scripts/gene_trait_merge.py'
+
+### Numeric/continuous traits: phylogenetic-signal statistics
+### (Blomberg's K, Pagel's lambda, Moran's I, continuous Mantel).
+rule gene_trait_numeric:
+    input:
+        'data/iqtree_protein/{gene}.treefile',
+        config['metadata']
+    output:
+        # One row per (gene, trait).
+        'data/gene_trait_numeric/{gene}-{trait}.csv'
+    params:
+        gene_col = config['gene_col']
+    threads: 1
+    conda:
+        'ete3'
+
+    script:
+        'bin/scripts/gene_trait_numeric.py'
+
+rule table_merge_numeric:
+    input:
+        expand(
+            'data/gene_trait_numeric/{gene}-{trait}.csv',
+            gene=config['gene'], trait=config['trait_num_col']
+        ),
+    output:
+        'data/gene_trait_numeric_summary.csv'
+    threads: 1
+    conda:
+        'ete3'
+    script:
+        'bin/scripts/gene_trait_numeric_merge.py'
