@@ -34,6 +34,7 @@ dir_in = "data/gene_trait"
 cols = [
     "Gene", "Trait", "Trait_Value", "N_Accessions", "N_Positive", "N_Negative",
     "Status", "Observed Purity", "Null Mean", "Purity p-value",
+    "Parsimony Score", "Parsimony Null Mean", "Parsimony p-value",
     "Mantel r", "Mantel p-value", "Error",
 ]
 df = pd.DataFrame(columns=cols)
@@ -53,9 +54,14 @@ if len(df) > 0:
         df.groupby(["Gene", "Trait"])["Purity p-value"]
         .transform(benjamini_hochberg)
     )
+    df["Parsimony p-value BH"] = (
+        df.groupby(["Gene", "Trait"])["Parsimony p-value"]
+        .transform(benjamini_hochberg)
+    )
     df["Significant BH (q<0.05)"] = (
         (df["Mantel p-value BH"].astype(float) < 0.05)
         | (df["Purity p-value BH"].astype(float) < 0.05)
+        | (df["Parsimony p-value BH"].astype(float) < 0.05)
     ).fillna(False).astype(bool)
 
 df.to_csv(snakemake.output[0], index=False)
