@@ -32,3 +32,4 @@ __pycache__/
 /data/gene_gene
 /data/gene_gene_summary.csv
 /data/cophenetic_scatter
+/hgt_unpooled

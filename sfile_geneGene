@@ -2,20 +2,7 @@ configfile: 'config.yml'
 
 rule all:
     input:
-        expand('data/cophenetic_scatter/{gene1}-{gene2}.png', gene1=config['gene1'], gene2=config['gene2']),
         'data/gene_gene_summary.csv'
-
-rule cophenetic_scatter:
-    input:
-        'data/iqtree_protein/{gene1}/{gene1}.treefile',
-        'data/iqtree_protein/{gene2}/{gene2}.treefile'
-    output:
-        'data/cophenetic_scatter/{gene1}-{gene2}.png'
-    threads: 1
-    conda:
-        'bin/env/ete3.yml'
-    script:
-        'bin/scripts/cophenetic_scatter.py'
 
 rule gene_gene:
     input:

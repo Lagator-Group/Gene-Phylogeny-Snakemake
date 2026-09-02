@@ -267,93 +267,6 @@ def robinson_fould(gene1_path, gene2_path):
     return df
 
 
-### Kendall-Colijn tree distance
-def _kc_midpoint_root(tree):
-    """Midpoint-root in place (KC is defined for rooted trees); no-op on fail."""
-    try:
-        og = tree.get_midpoint_outgroup()
-        if og is not None and og is not tree:
-            tree.set_outgroup(og)
-    except Exception:
-        pass
-    return tree
-
-
-def _kc_vectors(tree, name_order):
-    """
-    Kendall-Colijn vectors for a rooted tree over name_order. Returns (m, M, p):
-    m[k] / M[k] are the topological (edge count) and branch-length distance from
-    the root to the MRCA of leaf pair k (pairs in condensed upper-triangular
-    order); p[i] is leaf i's pendant branch length.
-    """
-    idx = {name: i for i, name in enumerate(name_order)}
-    n = len(name_order)
-    for node in tree.traverse("preorder"):
-        if node.is_root():
-            node._ed, node._ld = 0, 0.0
-        else:
-            node._ed = node.up._ed + 1
-            node._ld = node.up._ld + (node.dist or 0.0)
-
-    m = np.zeros(n * (n - 1) // 2)
-    M = np.zeros(n * (n - 1) // 2)
-
-    def pair_index(a, b):
-        i, j = (a, b) if a < b else (b, a)
-        return i * n - (i * (i + 1)) // 2 + (j - i - 1)
-
-    for node in tree.traverse("postorder"):
-        if node.is_leaf():
-            node._li = [idx[node.name]]
-            continue
-        groups = [c._li for c in node.children]
-        for a in range(len(groups)):
-            for b in range(a + 1, len(groups)):
-                for ia in groups[a]:
-                    for ib in groups[b]:
-                        k = pair_index(ia, ib)
-                        m[k] = node._ed
-                        M[k] = node._ld
-        node._li = [i for g in groups for i in g]
-
-    p = np.zeros(n)
-    for leaf in tree.get_leaves():
-        p[idx[leaf.name]] = leaf.dist or 0.0
-    return m, M, p
-
-
-def kendall_colijn(tree1_path, tree2_path):
-    """
-    Kendall-Colijn (2016) tree distance over shared taxa: the Euclidean distance
-    between the two trees' KC vectors. Returns (topological, branch_length, n).
-    Trees are pruned to shared taxa and midpoint-rooted. The topological version
-    (lambda=0) is more stable/informative than Robinson-Foulds; the branch-length
-    version (lambda=1) is sensitive to branch lengths like the Mantel/cophenetic
-    comparison. See Kendall & Colijn (2016), Mol. Biol. Evol. 33(10):2735-2743.
-    """
-    t1 = Tree(tree1_path)
-    t2 = Tree(tree2_path)
-    shared = sorted(set(t1.get_leaf_names()) & set(t2.get_leaf_names()))
-    if len(shared) < 3:
-        raise ValueError(f"only {len(shared)} shared taxa (need >= 3)")
-
-    t1.prune(shared, preserve_branch_length=True)
-    t2.prune(shared, preserve_branch_length=True)
-    _kc_midpoint_root(t1)
-    _kc_midpoint_root(t2)
-
-    m1, M1, p1 = _kc_vectors(t1, shared)
-    m2, M2, p2 = _kc_vectors(t2, shared)
-
-    # lambda=0: topological only (the all-ones pendant block cancels).
-    kc_top = float(np.linalg.norm(m1 - m2))
-    # lambda=1: branch lengths, pendant edges included.
-    v1 = np.concatenate([M1, p1])
-    v2 = np.concatenate([M2, p2])
-    kc_len = float(np.linalg.norm(v1 - v2))
-    return kc_top, kc_len, len(shared)
-
-
 ### Execution
 
 gene1_path = snakemake.input[0]
@@ -394,14 +307,6 @@ except Exception as e:
     )
     rf_df.loc[0] = [gene1, gene2, np.nan, np.nan, np.nan, np.nan, np.nan]
 
-#### Kendall-Colijn Exec
-try:
-    kc_top, kc_len, kc_n = kendall_colijn(gene1_path, gene2_path)
-    print(f"Kendall-Colijn topological = {kc_top:.4f}  branch-length = {kc_len:.4f}")
-except Exception as e:
-    print(e)
-    kc_top, kc_len = np.nan, np.nan
-
 
 merged_df = pd.DataFrame(
     {
@@ -414,9 +319,7 @@ merged_df = pd.DataFrame(
         "Max RF": rf_df["Max RF"],
         "Normalized RF": rf_df["Normalized RF"],
         "Shared taxa": rf_df["Shared taxa"],
-        "Permutation p-value": rf_df["Permutation p-value"],
-        "KC topological": kc_top,
-        "KC branch-length": kc_len,
+        "Permutation p-value": rf_df["Permutation p-value"]
     }
 )
 
