@@ -2,36 +2,29 @@ configfile: 'config.yml'
 
 rule all:
     input:
-        expand('data/cophenetic_scatter/{gene1}-{gene2}.png', gene1=config['gene1'], gene2=config['gene2']),
         'data/gene_gene_summary.csv'
-        
-rule cophenetic_scatter:
-    input:
-        'data/iqtree_protein/{gene1}.treefile',
-        'data/iqtree_protein/{gene2}.treefile'
-    output:
-        'data/cophenetic_scatter/{gene1}-{gene2}.png'
-    threads: 1
-    conda:
-        'bin/env/ete3.yml'
-    script:
-        'bin/scripts/cophenetic_scatter.py'
 
-rule gene_gene:
+rule alisim:
     input:
-        'data/iqtree_protein/{gene1}.treefile',
-        'data/iqtree_protein/{gene2}.treefile'
+        gene1_iqtree = 'data/iqtree_protein/{gene1}/{gene1}.iqtree',
+        gene2_iqtree = 'data/iqtree_protein/{gene2}/{gene2}.iqtree',
+        gene1_tree = 'data/iqtree_protein/{gene1}/{gene1}.treefile',
+        gene2_tree = 'data/iqtree_protein/{gene2}/{gene2}.treefile'
     output:
-        'data/gene_gene/{gene1}-{gene2}.csv'
-    threads: 1
+        'data/alisim/{gene1}-{gene2}.csv'
+    threads: 8
+    params:
+        num_bootstraps = config['num_bootstraps'],
+        min_shared_leaves = config['min_shared_leaves'],
+        random_seed = config['random_seed']
     conda:
         'bin/env/ete3.yml'
     script:
-        'bin/scripts/gene_gene.py'
+        'bin/scripts/alisim.py'
 
 rule geneGene_merge:
     input:
-        expand('data/gene_gene/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2']),
+        expand('data/alisim/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2']),
     output:
         'data/gene_gene_summary.csv'
     threads: 1

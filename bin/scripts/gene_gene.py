@@ -307,6 +307,7 @@ except Exception as e:
     )
     rf_df.loc[0] = [gene1, gene2, np.nan, np.nan, np.nan, np.nan, np.nan]
 
+
 merged_df = pd.DataFrame(
     {
         "Gene1": gene1,
@@ -318,7 +319,7 @@ merged_df = pd.DataFrame(
         "Max RF": rf_df["Max RF"],
         "Normalized RF": rf_df["Normalized RF"],
         "Shared taxa": rf_df["Shared taxa"],
-        "Permutation p-value": rf_df["Permutation p-value"],
+        "Permutation p-value": rf_df["Permutation p-value"]
     }
 )
 
