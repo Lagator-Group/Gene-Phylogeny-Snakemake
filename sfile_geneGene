@@ -30,6 +30,7 @@ rule all:
 rule alisim:
     input:
         gene1_iqtree = 'data/iqtree_protein/{gene1}/{gene1}.iqtree',
+        gene2_iqtree = 'data/iqtree_protein/{gene2}/{gene2}.iqtree',
         gene1_tree = 'data/iqtree_protein/{gene1}/{gene1}.treefile',
         gene2_tree = 'data/iqtree_protein/{gene2}/{gene2}.treefile'
     output:

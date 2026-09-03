@@ -11,7 +11,7 @@ def merge_df(dir_in, df):
 
 dir_in = 'data/alisim'
 
-cols = ['Gene1', 'Gene2', 'Mantel r', 'p', 'n', 'Mantel Sim p','RF', 'Max RF', 'Normalized RF', 'Shared taxa', 'Permutation p-value', 'nRF Sim p']
+cols = ['Gene1', 'Gene2', 'Mantel r', 'p', 'n', 'Mantel null mean', 'Mantel null sd', 'Mantel Sim p','RF', 'Max RF', 'Normalized RF', 'Shared taxa', 'Permutation p-value', 'nRF null mean','nRF null sd','nRF Sim p']
 df = pd.DataFrame(columns=cols)
 df = merge_df(dir_in, df)
 

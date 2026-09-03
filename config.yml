@@ -15,7 +15,7 @@ genes: []
 gene1: ['P0AFY6']
 
 #### cargo genes
-gene2: ['P0AFY6']
+gene2: ['P0AFY6','P03066']
 
 ### alisim configs
 num_bootstraps: 1000
