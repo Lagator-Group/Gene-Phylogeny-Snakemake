@@ -11,6 +11,13 @@ super5: []
 genes: []
 
 ### Gene - Gene Associations: sfile_geneGene, sfile_alisim
-gene1: ['P03066']
+#### backbone genes
+gene1: ['P0AFY6']
 
+#### cargo genes
 gene2: ['P0AFY6']
+
+### alisim configs
+num_bootstraps: 1000
+min_shared_leaves: 20
+random_seed: 1

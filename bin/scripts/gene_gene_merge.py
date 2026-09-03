@@ -9,9 +9,9 @@ def merge_df(dir_in, df):
         df = pd.concat([df,df_temp],axis=0)
     return df
 
-dir_in = 'data/gene_gene'
+dir_in = 'data/alisim'
 
-cols = ['Gene1', 'Gene2', 'Mantel r', 'p', 'n', 'RF', 'Max RF', 'Normalized RF', 'Shared taxa', 'Permutation p-value', 'KC topological', 'KC branch-length']
+cols = ['Gene1', 'Gene2', 'Mantel r', 'p', 'n', 'Mantel Sim p','RF', 'Max RF', 'Normalized RF', 'Shared taxa', 'Permutation p-value', 'nRF Sim p']
 df = pd.DataFrame(columns=cols)
 df = merge_df(dir_in, df)
 
