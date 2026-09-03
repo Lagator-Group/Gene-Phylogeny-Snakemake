@@ -4,29 +4,6 @@ rule all:
     input:
         'data/gene_gene_summary.csv'
 
-# rule gene_gene:
-#     input:
-#         'data/iqtree_protein/{gene1}/{gene1}.treefile',
-#         'data/iqtree_protein/{gene2}/{gene2}.treefile'
-#     output:
-#         'data/gene_gene/{gene1}-{gene2}.csv'
-#     threads: 1
-#     conda:
-#         'bin/env/ete3.yml'
-#     script:
-#         'bin/scripts/gene_gene.py'
-
-# rule geneGene_merge:
-#     input:
-#         expand('data/gene_gene/{gene1}-{gene2}.csv', gene1=config['gene1'], gene2=config['gene2']),
-#     output:
-#         'data/gene_gene_summary.csv'
-#     threads: 1
-#     conda: 
-#         'bin/env/ete3.yml'
-#     script:
-#         'bin/scripts/gene_gene_merge.py'
-
 rule alisim:
     input:
         gene1_iqtree = 'data/iqtree_protein/{gene1}/{gene1}.iqtree',
