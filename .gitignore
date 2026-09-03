@@ -14,3 +14,4 @@ plasmid_summary.csv
 notebook.ipynb
 metadata.csv
 /data/iqtree_protein
+/bin/scripts/__pycache__
