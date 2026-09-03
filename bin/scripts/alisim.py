@@ -194,7 +194,7 @@ dm_g1 = cophenetic_dm(g1_shared, shared)   # gene1's cophenetic matrix - reused 
 #### observed statistics (gene1 vs gene2), all on the small pruned trees
 # Mantel r + its own permutation p (skbio)
 dm_g2 = cophenetic_dm(g2_shared, shared)
-mantel_r_obs, mantel_p, mantel_n = mantel(dm_g1, dm_g2, method="pearson", permutations=999)
+mantel_r_obs, mantel_p, mantel_n = mantel(dm_g1, dm_g2, method="pearson", permutations=1000)
 print(f"Mantel r = {mantel_r_obs:.4f}  p = {mantel_p:.4f}  n = {mantel_n}")
 
 # normalized RF
